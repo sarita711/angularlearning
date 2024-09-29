@@ -1,11 +1,8 @@
-import { Component,inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HousingLocationComponent } from '../housing-location/housing-location.component';
 import { HousingLocation } from '../housing-location';
 import { HousingService } from '../housing.service';
-
-
-
 
 @Component({
   selector: 'app-home',
@@ -13,33 +10,43 @@ import { HousingService } from '../housing.service';
   imports: [CommonModule, HousingLocationComponent],
   template: `
     <section>
-      <form>
+      <form (submit)="preventDefault($event)">
         <input type="text" placeholder="Filter by city" #filter>
-        <button class="primary" type="button"(click)="filterResults(filter.value)">Search</button>
+        <button class="primary" type="button" (click)="filterResults(filter.value)">Search</button>
       </form>
     </section>
     <section class="results">
-      <app-housing-location *ngFor="let housingLocation of filteredLocationList"[housingLocation]="housingLocation"></app-housing-location> <!-- Use the selector of the HousingLocationComponent -->
+      <app-housing-location 
+        *ngFor="let housingLocation of filteredLocationList"
+        [housingLocation]="housingLocation">
+      </app-housing-location>
     </section>
   `,
   styleUrls: ['./home.component.css'],
-
 })
 export class HomeComponent {
-  housingLocationList:HousingLocation[]=[];
-  housingService:HousingService = inject(HousingService);
-  filteredLocationList:HousingLocation[] = [];
-  constructor(){
-     this.housingService.getAllHousingLocaton().then((housingLocationList:HousingLocation[])=>{
-          this.housingLocationList  = housingLocationList;
-     }
-    );
+  housingLocationList: HousingLocation[] = [];
+  filteredLocationList: HousingLocation[] = [];
+  housingService: HousingService = inject(HousingService);
 
+  constructor() {
+    this.housingService.getAllHousingLocaton().then((housingLocationList: HousingLocation[]) => {
+      this.housingLocationList = housingLocationList;
+      this.filteredLocationList = housingLocationList; // Initialize filtered list
+    });
   }
-  filterResults(text:string){
-    if(!text)this.filteredLocationList = this.housingLocationList;
-    this.filteredLocationList = this.housingLocationList.filter(
-      housingLocation=> housingLocation?.city.toLowerCase().includes(text.toLocaleLowerCase())
-    );
+
+  filterResults(text: string) {
+    if (!text) {
+      this.filteredLocationList = this.housingLocationList; // Reset to full list
+    } else {
+      this.filteredLocationList = this.housingLocationList.filter(housingLocation => 
+        housingLocation?.city.toLowerCase().includes(text.toLowerCase())
+      );
+    }
+  }
+
+  preventDefault(event: Event) {
+    event.preventDefault(); // Prevent form submission
   }
 }
